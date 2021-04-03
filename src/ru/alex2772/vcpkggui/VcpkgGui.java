@@ -5,14 +5,18 @@ import ru.alex2772.vcpkggui.ui.MainWindow;
 import java.util.logging.Logger;
 
 public class VcpkgGui {
-    private static MainWindow ourMainWindow = new MainWindow();
+    private static MainWindow ourMainWindow;
 
     public static void main(String[] args) {
-        getMainWindow().setVisible(true);
+        initMainWindow();
     }
 
     public static MainWindow getMainWindow() {
         return ourMainWindow;
+    }
+
+    public static void initMainWindow() {
+        ourMainWindow = new MainWindow();
     }
 
     public static Logger getLogger() {

@@ -1,14 +1,9 @@
 package ru.alex2772.vcpkggui.core;
 
 
-import ru.alex2772.vcpkggui.Util;
 import ru.alex2772.vcpkggui.VcpkgGui;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
@@ -23,33 +18,55 @@ public abstract class MyWorker<T> extends SwingWorker<T, Object> {
         try {
             myDone();
         } catch (ExecutionException e) {
+            onError(e);
             VcpkgGui.getLogger().log(Level.WARNING, "You have probably not installed the vcpkg", e);
             int n = JOptionPane.showOptionDialog(VcpkgGui.getMainWindow(),
-                    """
+                        Config.getConfig().mVcpkgLocation.isEmpty() ?
+                            """
                             The vcpkg is not installed (vcpkg-gui is just gui wrapper around vcpkg).
-                            Would you like to process to the vcpkg website to download it?
-                            vcpkg-gui will be closed.""",
+                            
+                            Would you like to install vcpkg automatically? git and platform build tools required.                
+                            """
+                            :
+                            """
+                            Your current vcpkg installation has broken or moved.
+                            
+                            Would you like to install vcpkg automatically? git and platform build tools required.   
+                            """,
                     "vcpkg is not installed",
-                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE,
                     null,
-                    new String[]{"Yes, process", "No, just exit"},
+                    new String[]{
+                            "Yes, install automatically",
+                            "No, I want to specify existing vcpkg location",
+                            "No, just exit"
+                    },
                     null);
 
             switch (n) {
-                case JOptionPane.YES_OPTION:
-                    Util.openUrl("https://docs.microsoft.com/en-us/cpp/build/vcpkg?view=msvc-160#how-to-get-and-use-vcpkg");
+                case JOptionPane.YES_OPTION: // autoinstall
+                    VcpkgInstaller.install();
+                    break;
 
-                    // fallthrough is ok
-                case JOptionPane.NO_OPTION:
+                case JOptionPane.NO_OPTION: // specify existing vcpkg
+                    JFileChooser j = new JFileChooser();
+                    j.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    Integer opt = j.showOpenDialog(null);
+
+                    break;
+
+                case JOptionPane.CANCEL_OPTION: // close option
                     System.exit(0);
                     break;
 
             }
         } catch (Exception e) {
+            onError(e);
             VcpkgGui.getLogger().log(Level.WARNING, "Unhandled exception in MyWorker", e);
         }
     }
 
+    protected abstract void onError(Exception e);
     protected abstract void myDone() throws Exception;
 }

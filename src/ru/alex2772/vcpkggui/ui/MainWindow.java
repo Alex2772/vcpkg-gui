@@ -5,10 +5,6 @@ import ru.alex2772.vcpkggui.core.MyWorker;
 import ru.alex2772.vcpkggui.core.VcpkgHelper;
 
 import javax.swing.*;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MainWindow extends JFrame {
 
@@ -24,11 +20,24 @@ public class MainWindow extends JFrame {
         setContentPane(root);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        // center window
+        pack();
+        setLocationRelativeTo(null);
+
+        setVisible(true);
+
+
+
         new MyWorker<String>() {
 
             @Override
             protected String doInBackground() throws Exception {
                 return VcpkgHelper.getVersion();
+            }
+
+            @Override
+            protected void onError(Exception e) {
+                VcpkgGui.getMainWindow().setVisible(false);
             }
 
             @Override
