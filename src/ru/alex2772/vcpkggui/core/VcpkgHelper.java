@@ -1,5 +1,6 @@
 package ru.alex2772.vcpkggui.core;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -10,9 +11,10 @@ public class VcpkgHelper {
 
     public static String call(String... args) throws IOException, InterruptedException {
         List<String> finalArgs = new LinkedList<>();
-        finalArgs.add("vcpkg");
+        finalArgs.add("./vcpkg");
         finalArgs.addAll(Arrays.asList(args));
         Process proc = new ProcessBuilder(finalArgs)
+                .directory(new File(Config.getConfig().mVcpkgLocation))
                 .redirectOutput(ProcessBuilder.Redirect.PIPE)
                 .redirectError(ProcessBuilder.Redirect.PIPE)
                 .start();
@@ -22,6 +24,16 @@ public class VcpkgHelper {
     }
 
     public static String getVersion() throws IOException, InterruptedException {
-        return call("--version");
+        String[] words = call("version").split("[ \n]");
+
+        try {
+            for (int i = 0; i < words.length; ++i) {
+                if (words[i].equals("version")) {
+                    return words[i + 1];
+                }
+            }
+        } catch (Throwable e) {}
+
+        return "unknown";
     }
 }

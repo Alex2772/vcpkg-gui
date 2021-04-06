@@ -7,6 +7,7 @@ import ru.alex2772.vcpkggui.util.OSUtil;
 import ru.alex2772.vcpkggui.util.ProcessUtil;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class VcpkgInstaller {
@@ -54,7 +55,9 @@ public class VcpkgInstaller {
 
             @Override
             public void onSuccess() {
-                VcpkgGui.getMainWindow().setVisible(true);
+                Config.getConfig().mVcpkgLocation = "vcpkg";
+                Config.getConfig().save();
+                VcpkgGui.initMainWindow();
             }
         });
 

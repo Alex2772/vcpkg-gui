@@ -22,8 +22,12 @@ public class Config {
         }
     }
 
-    public void save() throws IOException {
-        BufferedWriter fos = new BufferedWriter(new FileWriter("vcpkg-gui-config.txt"));
-        fos.write(mVcpkgLocation); fos.newLine();
+    public void save() {
+        try {
+            BufferedWriter fos = new BufferedWriter(new FileWriter("vcpkg-gui-config.txt"));
+            fos.write(mVcpkgLocation); fos.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

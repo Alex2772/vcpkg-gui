@@ -21,7 +21,7 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         // center window
-        pack();
+        setSize(800, 600);
         setLocationRelativeTo(null);
 
         setVisible(true);
@@ -42,7 +42,7 @@ public class MainWindow extends JFrame {
 
             @Override
             protected void myDone() throws Exception {
-                version.setText(get());
+                version.setText("vcpkg version " + get());
             }
         }.execute();
     }
