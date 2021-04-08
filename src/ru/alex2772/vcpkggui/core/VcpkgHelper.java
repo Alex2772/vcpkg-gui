@@ -1,6 +1,7 @@
 package ru.alex2772.vcpkggui.core;
 
 import ru.alex2772.vcpkggui.model.VcpkgPackage;
+import ru.alex2772.vcpkggui.util.LazyList;
 import ru.alex2772.vcpkggui.util.OSUtil;
 
 import java.io.File;
@@ -43,5 +44,28 @@ public class VcpkgHelper {
 
     public static List<VcpkgPackage> getInstalledPackages() {
         return new ArrayList<>();
+    }
+
+    public static List<VcpkgPackage> getAvailablePackages() {
+        return LazyList.create(new LazyList.IStreamObjectProvider<VcpkgPackage>() {
+
+            File[] mFiles = new File(Config.getConfig().mVcpkgLocation + "/ports").listFiles();
+
+            @Override
+            public int estimateListSize() {
+                return mFiles.length;
+            }
+
+            @Override
+            public VcpkgPackage readElement(int index) {
+                VcpkgPackage p = new VcpkgPackage(mFiles[index].getName(), "unknown", "unknown");
+                return p;
+            }
+
+            @Override
+            public void seekToElement(int index) {
+                // ignore
+            }
+        });
     }
 }

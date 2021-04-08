@@ -15,7 +15,8 @@ public class MainWindow extends JFrame {
     private JPanel root;
     private JLabel version;
     private JTabbedPane tabbedPane1;
-    private JTable installedTable;
+    private JTable installedPackagesTable;
+    private JTable availablePackagesTable;
 
     public MainWindow() {
         super("vcpkg-gui");
@@ -28,10 +29,12 @@ public class MainWindow extends JFrame {
 
         setVisible(true);
 
-        installedTable.setVisible(false);
+        installedPackagesTable.setVisible(false);
+        availablePackagesTable.setVisible(false);
 
         updateVersion();
         updateInstalledPackages();
+        updateAvailablePackages();
     }
 
     private void updateInstalledPackages() {
@@ -56,8 +59,30 @@ public class MainWindow extends JFrame {
             @Override
             protected void myDone() throws Exception {
 
-                installedTable.setVisible(true);
-                installedTable.setModel(new PackageTableModel(get()));
+                installedPackagesTable.setVisible(true);
+                installedPackagesTable.setModel(new PackageTableModel(get()));
+            }
+        }.execute();
+    }
+
+    private void updateAvailablePackages() {
+        new MyWorker<List<VcpkgPackage>>() {
+
+            @Override
+            protected List<VcpkgPackage> doInBackground() throws Exception {
+                return VcpkgHelper.getAvailablePackages();
+            }
+
+            @Override
+            protected void onError(Exception e) {
+                VcpkgGui.getMainWindow().setVisible(false);
+            }
+
+            @Override
+            protected void myDone() throws Exception {
+
+                availablePackagesTable.setVisible(true);
+                availablePackagesTable.setModel(new PackageTableModel(get()));
             }
         }.execute();
     }

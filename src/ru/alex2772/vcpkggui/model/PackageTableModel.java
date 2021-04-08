@@ -23,7 +23,6 @@ public class PackageTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         VcpkgPackage item = mPackages.get(rowIndex);
-        System.out.println(rowIndex);
         switch (columnIndex) {
             case 0: return item.getName();
             case 1: return item.getVersion();
