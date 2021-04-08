@@ -34,7 +34,7 @@ public class VcpkgInstaller {
                             .redirectError(ProcessBuilder.Redirect.PIPE)
                             .start();
 
-                    ProcessUtil.waitOrException(proc, 60);
+                    ProcessUtil.waitOrException(proc, 120);
                     ProcessUtil.ensureZeroExitCode(proc);
                 }
 
@@ -48,7 +48,7 @@ public class VcpkgInstaller {
                             .redirectError(ProcessBuilder.Redirect.PIPE)
                             .start();
 
-                    ProcessUtil.waitOrException(proc, 300);
+                    ProcessUtil.outputToProgressDialog(pd, proc);
                     ProcessUtil.ensureZeroExitCode(proc);
                 }
             }

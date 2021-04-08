@@ -5,6 +5,7 @@ import ru.alex2772.vcpkggui.VcpkgGui;
 import javax.swing.*;
 import java.awt.event.WindowEvent;
 import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
 
 public class ProgressDialog extends JFrame {
     private JLabel statusLabel;
@@ -28,6 +29,7 @@ public class ProgressDialog extends JFrame {
         statusLabel.setText("");
         progressBar.setMaximum(100);
         progressBar.setValue(0);
+        progressBar.setIndeterminate(true);
 
         // center window
         setLocationRelativeTo(null);
@@ -51,6 +53,7 @@ public class ProgressDialog extends JFrame {
                 } catch (CancellationException e) {
                     dispatchEvent(new WindowEvent(ProgressDialog.this, WindowEvent.WINDOW_CLOSING));
                 } catch (Exception e) {
+                    VcpkgGui.getLogger().log(Level.WARNING, "Could not " + statusLabel.getText().toLowerCase(), e);
                     setVisible(false);
                     JOptionPane.showMessageDialog(VcpkgGui.getMainWindow(),
                             "Error has occurred while " + statusLabel.getText().toLowerCase() + ":\n\n" +
@@ -84,6 +87,15 @@ public class ProgressDialog extends JFrame {
                 progressBar.setValue(percentage);
                 progressBar.setMaximum(100);
             }
+            statusLabel.setText(stageName);
+        });
+    }
+    /**
+     * Updates display info about running process. This function can be called from any thread
+     * @param stageName stage name (for label)
+     */
+    public void displayStateAsync(String stageName) {
+        SwingUtilities.invokeLater(() -> {
             statusLabel.setText(stageName);
         });
     }
