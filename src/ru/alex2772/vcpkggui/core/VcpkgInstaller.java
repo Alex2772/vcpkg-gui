@@ -8,6 +8,7 @@ import ru.alex2772.vcpkggui.util.ProcessUtil;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 
 public class VcpkgInstaller {
@@ -28,21 +29,23 @@ public class VcpkgInstaller {
                 }
                 pd.displayStateAsync(-1, "Cloning repository");
                 // git clone repo
-                {
-                    Process proc = new ProcessBuilder("git", "clone", "https://github.com/Microsoft/vcpkg")
+                try {
+                    Process proc = new ProcessBuilder(OSUtil.getGitExecutable(), "clone", "https://github.com/Microsoft/vcpkg")
                             .redirectOutput(ProcessBuilder.Redirect.PIPE)
                             .redirectError(ProcessBuilder.Redirect.PIPE)
                             .start();
 
                     ProcessUtil.waitOrException(proc, 120);
                     ProcessUtil.ensureZeroExitCode(proc);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Looks like git is not installed. Download git: https://git-scm.com/downloads");
                 }
 
                 pd.displayStateAsync(50, "Compiling");
 
                 // do compilation
                 {
-                    Process proc = new ProcessBuilder(OSUtil.isWindows() ? "bootstrap-vcpkg.bat" : "./bootstrap-vcpkg.sh")
+                    Process proc = new ProcessBuilder(OSUtil.isWindows() ? vcpkgDir.getAbsolutePath() + "\\bootstrap-vcpkg.bat" : "./bootstrap-vcpkg.sh")
                             .directory(vcpkgDir)
                             //.redirectOutput(ProcessBuilder.Redirect.PIPE)
                             .redirectError(ProcessBuilder.Redirect.PIPE)
@@ -117,11 +120,10 @@ public class VcpkgInstaller {
 
             @Override
             public String toString() {
-                return """
-                        The folder you specified either does not contain vcpkg executable or contains a broken vcpkg
-                        installation. You should either try again or do auto install.
+                return "The folder you specified either does not contain vcpkg executable or contains a broken vcpkg " +
+                        "installation. You should either try again or do auto install.\n\n" +
                         
-                        Error message: """ + ' ' + mException.getMessage();
+                        "Error message: " + mException.getMessage();
             }
 
             @Override
@@ -146,11 +148,7 @@ public class VcpkgInstaller {
             int n = JOptionPane.showOptionDialog(VcpkgGui.getMainWindow(),
 
                     message +
-                            """
-                            
-                            
-                            Would you like to install vcpkg automatically? git and platform build tools required.                
-                            """,
+                            "\n\nWould you like to install vcpkg automatically? git and platform build tools required.",
                     "No valid vcpkg",
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE,

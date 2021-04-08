@@ -1,9 +1,11 @@
 package ru.alex2772.vcpkggui.core;
 
 import ru.alex2772.vcpkggui.model.VcpkgPackage;
+import ru.alex2772.vcpkggui.util.OSUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +15,7 @@ public class VcpkgHelper {
 
     public static String call(String... args) throws IOException, InterruptedException {
         List<String> finalArgs = new LinkedList<>();
-        finalArgs.add("./vcpkg");
+        finalArgs.add(OSUtil.isWindows() ? new File(Config.getConfig().mVcpkgLocation).getAbsolutePath() + "\\vcpkg.exe" : "./vcpkg");
         finalArgs.addAll(Arrays.asList(args));
         Process proc = new ProcessBuilder(finalArgs)
                 .directory(new File(Config.getConfig().mVcpkgLocation))
@@ -40,6 +42,6 @@ public class VcpkgHelper {
     }
 
     public static List<VcpkgPackage> getInstalledPackages() {
-
+        return new ArrayList<>();
     }
 }
