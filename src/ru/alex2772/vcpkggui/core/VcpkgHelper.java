@@ -1,5 +1,7 @@
 package ru.alex2772.vcpkggui.core;
 
+import ru.alex2772.vcpkggui.model.VcpkgPackage;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -35,5 +37,9 @@ public class VcpkgHelper {
         } catch (Throwable e) {}
 
         return "unknown";
+    }
+
+    public static List<VcpkgPackage> getInstalledPackages() {
+
     }
 }
