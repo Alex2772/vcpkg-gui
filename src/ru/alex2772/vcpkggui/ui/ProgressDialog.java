@@ -8,7 +8,7 @@ import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 
 public class ProgressDialog extends JFrame {
-    private JLabel statusLabel;
+    private JLabel stageLabel;
     private JLabel titleLabel;
     private JProgressBar progressBar;
     private JButton cancelButton;
@@ -26,7 +26,7 @@ public class ProgressDialog extends JFrame {
         setResizable(false);
         pack();
         titleLabel.setText(taskName);
-        statusLabel.setText("");
+        stageLabel.setText("");
         progressBar.setMaximum(100);
         progressBar.setValue(0);
         progressBar.setIndeterminate(true);
@@ -53,10 +53,10 @@ public class ProgressDialog extends JFrame {
                 } catch (CancellationException e) {
                     dispatchEvent(new WindowEvent(ProgressDialog.this, WindowEvent.WINDOW_CLOSING));
                 } catch (Exception e) {
-                    VcpkgGui.getLogger().log(Level.WARNING, "Could not " + statusLabel.getText().toLowerCase(), e);
+                    VcpkgGui.getLogger().log(Level.WARNING, "Could not " + stageLabel.getText().toLowerCase(), e);
                     setVisible(false);
                     JOptionPane.showMessageDialog(VcpkgGui.getMainWindow(),
-                            "Error has occurred while " + statusLabel.getText().toLowerCase() + ":\n\n" +
+                            "Error has occurred while " + stageLabel.getText().toLowerCase() + ":\n\n" +
                             e.getMessage(),
                             taskName,
                             JOptionPane.OK_OPTION);
@@ -87,17 +87,33 @@ public class ProgressDialog extends JFrame {
                 progressBar.setValue(percentage);
                 progressBar.setMaximum(100);
             }
-            statusLabel.setText(stageName);
+
+            displayState(stageName);
         });
     }
+
     /**
      * Updates display info about running process. This function can be called from any thread
      * @param stageName stage name (for label)
      */
     public void displayStateAsync(String stageName) {
         SwingUtilities.invokeLater(() -> {
-            statusLabel.setText(stageName);
+            displayState(stageName);
         });
+    }
+
+    /**
+     * Non-async label update
+     * @param stageName stage name to be displayed
+     */
+    private void displayState(String stageName) {
+        // limit length of the message or it will break layout for some unknown reason
+        final int MAX_LENGTH = 60;
+        if (stageName.length() > MAX_LENGTH) {
+            stageLabel.setText(stageName.substring(0, MAX_LENGTH) + "...");
+        } else {
+            stageLabel.setText(stageName);
+        }
     }
 
     public interface Callback {
