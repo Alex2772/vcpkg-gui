@@ -1,16 +1,18 @@
 package ru.alex2772.vcpkggui.core;
 
+import ru.alex2772.vcpkggui.VcpkgGui;
 import ru.alex2772.vcpkggui.model.VcpkgPackage;
 import ru.alex2772.vcpkggui.util.LazyList;
 import ru.alex2772.vcpkggui.util.OSUtil;
+import ru.alex2772.vcpkggui.util.VcpkgConfigParser;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class VcpkgHelper {
 
@@ -42,6 +44,42 @@ public class VcpkgHelper {
         return "unknown";
     }
 
+    public static VcpkgPackage fetchPortInfo(String packageFolderName) {
+        VcpkgPackage p = new VcpkgPackage(packageFolderName, "", "");
+
+        // package info located either in CONTROL file or vcpkg.json file.
+        File controlFile = new File(Config.getConfig().mVcpkgLocation + "/ports/" + packageFolderName + "/CONTROL");
+        File vcpkgJsonFile = new File(Config.getConfig().mVcpkgLocation + "/ports/" + packageFolderName + "/vcpkg.json");
+        if (controlFile.isFile()) {
+            try {
+                // parse it
+                VcpkgConfigParser.parse(new FileReader(controlFile), (key, value) -> {
+                    switch (key) {
+                        case "Source" -> p.setName(value);
+                        case "Version" -> p.setVersion(value);
+                        case "Supports" -> p.setPlatform(value);
+                    }
+                });
+            } catch (Exception e) {
+                VcpkgGui.getLogger().log(Level.WARNING, "Could not fetch package info of " + packageFolderName, e);
+            }
+        } else if (vcpkgJsonFile.isFile()) {
+            try {
+                // the json file can be easily parser with VcpkgConfigParser because json structure is very similar to
+                // vcpkg configs
+                VcpkgConfigParser.parse(new FileReader(vcpkgJsonFile), (key, value) -> {
+                    switch (key) {
+                        case "version-string" -> p.setVersion(value);
+                    }
+                });
+            } catch (Exception e) {
+                VcpkgGui.getLogger().log(Level.WARNING, "Could not fetch package info of " + packageFolderName, e);
+            }
+        }
+
+        return p;
+    }
+
     public static List<VcpkgPackage> getInstalledPackages() {
         return new ArrayList<>();
     }
@@ -58,8 +96,7 @@ public class VcpkgHelper {
 
             @Override
             public VcpkgPackage readElement(int index) {
-                VcpkgPackage p = new VcpkgPackage(mFiles[index].getName(), "unknown", "unknown");
-                return p;
+                return fetchPortInfo(mFiles[index].getName());
             }
 
             @Override
