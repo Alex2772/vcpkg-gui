@@ -17,6 +17,7 @@ public class MainWindow extends JFrame {
     private JTabbedPane tabbedPane1;
     private JPanel descriptionAvailableWrap;
     private JPanel descriptionInstalledWrap;
+    private JLabel noPackagesInstalledLabel;
 
     private DescriptionPanel mDescriptionInstalled = new DescriptionPanel();
     private DescriptionPanel mDescriptionAvailable = new DescriptionPanel();
@@ -30,13 +31,11 @@ public class MainWindow extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
 
-        setVisible(true);
+        mDescriptionInstalled.root.setVisible(false);
+        mDescriptionAvailable.root.setVisible(false);
+        noPackagesInstalledLabel.setVisible(true);
 
-        descriptionInstalledWrap.add(mDescriptionInstalled.root);
         descriptionAvailableWrap.add(mDescriptionAvailable.root);
-
-        descriptionInstalledWrap.setVisible(false);
-        descriptionAvailableWrap.setVisible(false);
 
         updateVersion();
         updateInstalledPackages();
@@ -58,9 +57,13 @@ public class MainWindow extends JFrame {
 
             @Override
             protected void myDone() throws Exception {
-
-                descriptionInstalledWrap.setVisible(true);
-                mDescriptionInstalled.table.setModel(new PackageTableModel(get()));
+                List<VcpkgPackage> installedPackages = get();
+                mDescriptionInstalled.root.setVisible(!installedPackages.isEmpty());
+                noPackagesInstalledLabel.setVisible(installedPackages.isEmpty());
+                if (!installedPackages.isEmpty()) {
+                    descriptionInstalledWrap.add(mDescriptionInstalled.root);
+                    mDescriptionInstalled.table.setModel(new PackageTableModel(installedPackages));
+                }
             }
         }.execute();
     }
@@ -80,8 +83,7 @@ public class MainWindow extends JFrame {
 
             @Override
             protected void myDone() throws Exception {
-
-                descriptionAvailableWrap.setVisible(true);
+                mDescriptionAvailable.root.setVisible(true);
                 mDescriptionAvailable.table.setModel(new PackageTableModel(get()));
             }
         }.execute();
@@ -103,6 +105,7 @@ public class MainWindow extends JFrame {
             @Override
             protected void myDone() throws Exception {
                 version.setText("vcpkg version " + get());
+                setVisible(true);
             }
         }.execute();
     }

@@ -31,7 +31,15 @@
             </constraints>
             <properties/>
             <border type="none"/>
-            <children/>
+            <children>
+              <component id="89d93" class="javax.swing.JLabel" binding="noPackagesInstalledLabel">
+                <constraints border-constraint="Center"/>
+                <properties>
+                  <horizontalAlignment value="0"/>
+                  <text value="You have no packages installed yet"/>
+                </properties>
+              </component>
+            </children>
           </grid>
           <grid id="1a8ea" binding="descriptionAvailableWrap" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
