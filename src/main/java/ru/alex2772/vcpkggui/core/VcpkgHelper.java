@@ -47,19 +47,21 @@ public class VcpkgHelper {
     }
 
     public static VcpkgPackage fetchPortInfo(String packageFolderName) {
-        VcpkgPackage p = new VcpkgPackage(packageFolderName, "", "");
+        VcpkgPackage p = new VcpkgPackage(packageFolderName);
 
-        // package info located either in CONTROL file or vcpkg.json file.
+        // package info located in either CONTROL file or vcpkg.json file.
         File controlFile = new File(Config.getConfig().vcpkgLocation + "/ports/" + packageFolderName + "/CONTROL");
         File vcpkgJsonFile = new File(Config.getConfig().vcpkgLocation + "/ports/" + packageFolderName + "/vcpkg.json");
         if (controlFile.isFile()) {
             try {
-                // parse it
+                // parse CONTROL
                 VcpkgConfigParser.parse(new FileReader(controlFile), (key, value) -> {
                     switch (key) {
                         case "Source" -> p.setName(value);
                         case "Version" -> p.setVersion(value);
                         case "Supports" -> p.setPlatform(value);
+                        case "Homepage" -> p.setHomepage(value);
+                        case "Description" -> p.setDescription(value);
                     }
                 });
             } catch (Exception e) {
@@ -67,9 +69,13 @@ public class VcpkgHelper {
             }
         } else if (vcpkgJsonFile.isFile()) {
             try {
-                VcpkgJson json = new GsonBuilder().create().fromJson(new FileReader(vcpkgJsonFile), VcpkgJson.class);
+                // parse vcpkg.json
+                VcpkgJson json = new GsonBuilder()
+                        .create().fromJson(new FileReader(vcpkgJsonFile), VcpkgJson.class);
                 p.setName(json.name);
                 p.setVersion(json.versionString);
+                p.setHomepage(json.homepage);
+                p.setDescription(json.description);
             } catch (Exception e) {
                 VcpkgGui.getLogger().log(Level.WARNING, "Could not fetch package info of " + packageFolderName, e);
             }

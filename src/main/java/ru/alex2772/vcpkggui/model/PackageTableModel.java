@@ -1,6 +1,7 @@
 package ru.alex2772.vcpkggui.model;
 
 import javax.swing.table.AbstractTableModel;
+import java.util.Comparator;
 import java.util.List;
 
 public class PackageTableModel extends AbstractTableModel {
@@ -18,6 +19,11 @@ public class PackageTableModel extends AbstractTableModel {
     @Override
     public int getColumnCount() {
         return 3;
+    }
+
+
+    public VcpkgPackage getPackage(int index) {
+        return mPackages.get(index);
     }
 
     @Override
