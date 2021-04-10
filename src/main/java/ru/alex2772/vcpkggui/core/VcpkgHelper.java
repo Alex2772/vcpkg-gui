@@ -4,10 +4,13 @@ import com.google.gson.GsonBuilder;
 import ru.alex2772.vcpkggui.VcpkgGui;
 import ru.alex2772.vcpkggui.model.VcpkgJson;
 import ru.alex2772.vcpkggui.model.VcpkgPackage;
+import ru.alex2772.vcpkggui.ui.ProgressDialog;
 import ru.alex2772.vcpkggui.util.LazyList;
 import ru.alex2772.vcpkggui.util.OSUtil;
+import ru.alex2772.vcpkggui.util.ProcessUtil;
 import ru.alex2772.vcpkggui.util.VcpkgConfigParser;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +23,7 @@ public class VcpkgHelper {
 
     public static String call(String... args) throws IOException, InterruptedException {
         List<String> finalArgs = new LinkedList<>();
-        finalArgs.add(OSUtil.isWindows() ? new File(Config.getConfig().vcpkgLocation).getAbsolutePath() + "\\vcpkg.exe" : "./vcpkg");
+        finalArgs.add(getVcpkgExecutable());
         finalArgs.addAll(Arrays.asList(args));
         Process proc = new ProcessBuilder(finalArgs)
                 .directory(new File(Config.getConfig().vcpkgLocation))
@@ -30,6 +33,10 @@ public class VcpkgHelper {
 
         proc.waitFor(30, TimeUnit.SECONDS);
         return new String(proc.getInputStream().readAllBytes());
+    }
+
+    private static String getVcpkgExecutable() {
+        return OSUtil.isWindows() ? new File(Config.getConfig().vcpkgLocation).getAbsolutePath() + "\\vcpkg.exe" : "./vcpkg";
     }
 
     public static String getVersion() throws IOException, InterruptedException {
@@ -46,8 +53,17 @@ public class VcpkgHelper {
         return "unknown";
     }
 
+    public static class VcpkgInstallRecord {
+        public String name;
+        public String version;
 
-    public static List<String> getInstalledPackagesVcpkg() {
+        public VcpkgInstallRecord(String name, String version) {
+            this.name = name;
+            this.version = version;
+        }
+    }
+
+    public static List<VcpkgInstallRecord> getInstalledPackagesVcpkg() {
         try {
             /*
             vcpkg list outputs installed packages in the following format:
@@ -57,11 +73,18 @@ public class VcpkgHelper {
             package3:platform       version3     description3
 
              */
-            List<String> s = new ArrayList<>();
+            List<VcpkgInstallRecord> s = new ArrayList<>();
             String[] lines = call("list").split("\n");
             for (String line : lines) {
+                // separate package and platform
                 int colonIndex = line.indexOf(':');
-                s.add(line.substring(0, colonIndex));
+
+                // find version
+                int blankIndex = line.indexOf(' ');
+                int versionIndex = blankIndex + 1;
+                for (; line.charAt(versionIndex) == ' '; ++versionIndex);
+
+                s.add(new VcpkgInstallRecord(line.substring(0, colonIndex), line.substring(versionIndex, line.indexOf(' ', versionIndex))));
             }
             return s;
         } catch (IOException e) {
@@ -99,10 +122,30 @@ public class VcpkgHelper {
         });
     }
 
-    public static void install(VcpkgPackage selectedPackage) {
+    public static void install(VcpkgPackage vcpkgPackage) {
 
     }
-    public static void uninstall(VcpkgPackage selectedPackage) {
+    public static void uninstall(VcpkgPackage vcpkgPackage) {
+        new ProgressDialog("Uninstalling " + vcpkgPackage.getName(), new ProgressDialog.Callback() {
+            @Override
+            public void doInBackground(ProgressDialog pd) throws Exception {
+                Process proc = new ProcessBuilder(getVcpkgExecutable(), "remove", vcpkgPackage.getName())
+                        .directory(new File(Config.getConfig().vcpkgLocation))
+                        .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                        .redirectError(ProcessBuilder.Redirect.PIPE)
+                        .start();
 
+                ProcessUtil.outputToProgressDialog(pd, proc);
+            }
+
+            @Override
+            public void onSuccess() {
+                JOptionPane.showMessageDialog(VcpkgGui.getMainWindow(),
+                                "Package: " + vcpkgPackage.getName(),
+                        "Package uninstalled successfully",
+                        JOptionPane.INFORMATION_MESSAGE);
+                VcpkgGui.invalidateListInstalledPackages();
+            }
+        });
     }
 }

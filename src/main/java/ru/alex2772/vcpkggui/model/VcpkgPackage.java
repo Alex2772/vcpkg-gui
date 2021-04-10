@@ -46,9 +46,10 @@ public class VcpkgPackage {
         if (ourInstalledPackages == null) {
             // we should initiate and populate this list in order to determine which packages are installed
             ourInstalledPackages = new ArrayList<>();
-            for (String packageName : VcpkgHelper.getInstalledPackagesVcpkg()) {
-                VcpkgPackage p = get(packageName);
+            for (VcpkgHelper.VcpkgInstallRecord packageName : VcpkgHelper.getInstalledPackagesVcpkg()) {
+                VcpkgPackage p = get(packageName.name);
                 p.mIsInstalled = true;
+                p.mVersion = packageName.version;
                 ourInstalledPackages.add(p);
             }
         }
@@ -94,6 +95,10 @@ public class VcpkgPackage {
         }
 
         return p;
+    }
+
+    public static void invalidateListInstalledPackages() {
+        ourInstalledPackages = null;
     }
 
 

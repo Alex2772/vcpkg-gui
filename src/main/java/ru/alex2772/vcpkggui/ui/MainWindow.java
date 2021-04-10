@@ -43,7 +43,7 @@ public class MainWindow extends JFrame {
         setVisible(true);
     }
 
-    private void updateInstalledPackages() {
+    public void updateInstalledPackages() {
         new MyWorker<List<VcpkgPackage>>() {
 
             @Override
@@ -70,7 +70,7 @@ public class MainWindow extends JFrame {
         }.execute();
     }
 
-    private void updateAvailablePackages() {
+    public void updateAvailablePackages() {
         new MyWorker<List<VcpkgPackage>>() {
 
             @Override
