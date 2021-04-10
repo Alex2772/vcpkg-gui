@@ -60,7 +60,7 @@ public class VcpkgInstaller {
             public void onSuccess() {
 
                 // try to get version
-                Config.getConfig().mVcpkgLocation = "vcpkg";
+                Config.getConfig().vcpkgLocation = "vcpkg";
                 try {
                     String version = VcpkgHelper.getVersion();
                     if (version.equals("unknown") || version.isEmpty()) {
@@ -75,7 +75,7 @@ public class VcpkgInstaller {
                             JOptionPane.INFORMATION_MESSAGE);
 
 
-                    Config.getConfig().save();
+                    Config.save();
                     VcpkgGui.initMainWindow();
                 } catch (Exception e) {
                     // installation is bad, show error message
@@ -140,7 +140,7 @@ public class VcpkgInstaller {
      *        installation.
      */
     public static void showInstallationDialog() {
-        InstallationMessage message = Config.getConfig().mVcpkgLocation.isEmpty() ?
+        InstallationMessage message = Config.getConfig().vcpkgLocation.isEmpty() ?
                                       InstallationMessage.NOT_INSTALLED : InstallationMessage.INSTALLATION_HAS_BROKEN_OR_MOVED;
 
         // user can specify invalid path so using endless loop
@@ -170,7 +170,7 @@ public class VcpkgInstaller {
                     j.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     if (j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                         File selectedFile = j.getSelectedFile();
-                        Config.getConfig().mVcpkgLocation = selectedFile.getPath();
+                        Config.getConfig().vcpkgLocation = selectedFile.getPath();
 
                         // try to get version
                         try {
@@ -187,7 +187,7 @@ public class VcpkgInstaller {
                                                            JOptionPane.INFORMATION_MESSAGE);
 
 
-                            Config.getConfig().save();
+                            Config.save();
                             VcpkgGui.initMainWindow();
                             return;
                         } catch (Exception e) {

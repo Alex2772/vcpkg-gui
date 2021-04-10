@@ -1,6 +1,8 @@
 package ru.alex2772.vcpkggui.core;
 
+import com.google.gson.GsonBuilder;
 import ru.alex2772.vcpkggui.VcpkgGui;
+import ru.alex2772.vcpkggui.model.VcpkgJson;
 import ru.alex2772.vcpkggui.model.VcpkgPackage;
 import ru.alex2772.vcpkggui.util.LazyList;
 import ru.alex2772.vcpkggui.util.OSUtil;
@@ -18,10 +20,10 @@ public class VcpkgHelper {
 
     public static String call(String... args) throws IOException, InterruptedException {
         List<String> finalArgs = new LinkedList<>();
-        finalArgs.add(OSUtil.isWindows() ? new File(Config.getConfig().mVcpkgLocation).getAbsolutePath() + "\\vcpkg.exe" : "./vcpkg");
+        finalArgs.add(OSUtil.isWindows() ? new File(Config.getConfig().vcpkgLocation).getAbsolutePath() + "\\vcpkg.exe" : "./vcpkg");
         finalArgs.addAll(Arrays.asList(args));
         Process proc = new ProcessBuilder(finalArgs)
-                .directory(new File(Config.getConfig().mVcpkgLocation))
+                .directory(new File(Config.getConfig().vcpkgLocation))
                 .redirectOutput(ProcessBuilder.Redirect.PIPE)
                 .redirectError(ProcessBuilder.Redirect.PIPE)
                 .start();
@@ -48,8 +50,8 @@ public class VcpkgHelper {
         VcpkgPackage p = new VcpkgPackage(packageFolderName, "", "");
 
         // package info located either in CONTROL file or vcpkg.json file.
-        File controlFile = new File(Config.getConfig().mVcpkgLocation + "/ports/" + packageFolderName + "/CONTROL");
-        File vcpkgJsonFile = new File(Config.getConfig().mVcpkgLocation + "/ports/" + packageFolderName + "/vcpkg.json");
+        File controlFile = new File(Config.getConfig().vcpkgLocation + "/ports/" + packageFolderName + "/CONTROL");
+        File vcpkgJsonFile = new File(Config.getConfig().vcpkgLocation + "/ports/" + packageFolderName + "/vcpkg.json");
         if (controlFile.isFile()) {
             try {
                 // parse it
@@ -65,13 +67,9 @@ public class VcpkgHelper {
             }
         } else if (vcpkgJsonFile.isFile()) {
             try {
-                // the json file can be easily parser with VcpkgConfigParser because json structure is very similar to
-                // vcpkg configs
-                VcpkgConfigParser.parse(new FileReader(vcpkgJsonFile), (key, value) -> {
-                    switch (key) {
-                        case "version-string" -> p.setVersion(value);
-                    }
-                });
+                VcpkgJson json = new GsonBuilder().create().fromJson(new FileReader(vcpkgJsonFile), VcpkgJson.class);
+                p.setName(json.name);
+                p.setVersion(json.versionString);
             } catch (Exception e) {
                 VcpkgGui.getLogger().log(Level.WARNING, "Could not fetch package info of " + packageFolderName, e);
             }
@@ -87,7 +85,7 @@ public class VcpkgHelper {
     public static List<VcpkgPackage> getAvailablePackages() {
         return LazyList.create(new LazyList.IStreamObjectProvider<VcpkgPackage>() {
 
-            File[] mFiles = new File(Config.getConfig().mVcpkgLocation + "/ports").listFiles();
+            File[] mFiles = new File(Config.getConfig().vcpkgLocation + "/ports").listFiles();
 
             @Override
             public int estimateListSize() {
