@@ -40,7 +40,7 @@ public class PackageTableModel extends AbstractTableModel {
     @Override
     public String getColumnName(int column) {
         switch (column) {
-            case 0: return "Package";
+            case 0: return "Name";
             case 1: return "Version";
             case 2: return "Platform";
         }

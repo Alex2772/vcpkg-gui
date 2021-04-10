@@ -46,42 +46,31 @@ public class VcpkgHelper {
         return "unknown";
     }
 
-    public static VcpkgPackage fetchPortInfo(String packageFolderName) {
-        VcpkgPackage p = new VcpkgPackage(packageFolderName);
 
-        // package info located in either CONTROL file or vcpkg.json file.
-        File controlFile = new File(Config.getConfig().vcpkgLocation + "/ports/" + packageFolderName + "/CONTROL");
-        File vcpkgJsonFile = new File(Config.getConfig().vcpkgLocation + "/ports/" + packageFolderName + "/vcpkg.json");
-        if (controlFile.isFile()) {
-            try {
-                // parse CONTROL
-                VcpkgConfigParser.parse(new FileReader(controlFile), (key, value) -> {
-                    switch (key) {
-                        case "Source" -> p.setName(value);
-                        case "Version" -> p.setVersion(value);
-                        case "Supports" -> p.setPlatform(value);
-                        case "Homepage" -> p.setHomepage(value);
-                        case "Description" -> p.setDescription(value);
-                    }
-                });
-            } catch (Exception e) {
-                VcpkgGui.getLogger().log(Level.WARNING, "Could not fetch package info of " + packageFolderName, e);
+    public static List<String> getInstalledPackagesVcpkg() {
+        try {
+            /*
+            vcpkg list outputs installed packages in the following format:
+
+            package1:platform       version1     description1
+            package2:platform       version2     description2
+            package3:platform       version3     description3
+
+             */
+            List<String> s = new ArrayList<>();
+            String[] lines = call("list").split("\n");
+            for (String line : lines) {
+                int colonIndex = line.indexOf(':');
+                s.add(line.substring(0, colonIndex));
             }
-        } else if (vcpkgJsonFile.isFile()) {
-            try {
-                // parse vcpkg.json
-                VcpkgJson json = new GsonBuilder()
-                        .create().fromJson(new FileReader(vcpkgJsonFile), VcpkgJson.class);
-                p.setName(json.name);
-                p.setVersion(json.versionString);
-                p.setHomepage(json.homepage);
-                p.setDescription(json.description);
-            } catch (Exception e) {
-                VcpkgGui.getLogger().log(Level.WARNING, "Could not fetch package info of " + packageFolderName, e);
-            }
+            return s;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
-        return p;
+        return new ArrayList<>();
     }
 
     public static List<VcpkgPackage> getInstalledPackages() {
@@ -100,7 +89,7 @@ public class VcpkgHelper {
 
             @Override
             public VcpkgPackage readElement(int index) {
-                return fetchPortInfo(mFiles[index].getName());
+                return VcpkgPackage.get(mFiles[index].getName());
             }
 
             @Override
@@ -108,5 +97,12 @@ public class VcpkgHelper {
                 // ignore
             }
         });
+    }
+
+    public static void install(VcpkgPackage selectedPackage) {
+
+    }
+    public static void uninstall(VcpkgPackage selectedPackage) {
+
     }
 }
