@@ -56,10 +56,12 @@ public class VcpkgHelper {
     public static class VcpkgInstallRecord {
         public String name;
         public String version;
+        public String platform;
 
-        public VcpkgInstallRecord(String name, String version) {
+        public VcpkgInstallRecord(String name, String version, String platform) {
             this.name = name;
             this.version = version;
+            this.platform = platform;
         }
     }
 
@@ -68,9 +70,9 @@ public class VcpkgHelper {
             /*
             vcpkg list outputs installed packages in the following format:
 
-            package1:platform       version1     description1
-            package2:platform       version2     description2
-            package3:platform       version3     description3
+            package1:platform1      version1#port_version1     description1
+            package2:platform2      version2#port_version2     description2
+            package3:platform3      version3#port_version3     description3
 
              */
             List<VcpkgInstallRecord> s = new ArrayList<>();
@@ -84,7 +86,12 @@ public class VcpkgHelper {
                 int versionIndex = blankIndex + 1;
                 for (; line.charAt(versionIndex) == ' '; ++versionIndex);
 
-                s.add(new VcpkgInstallRecord(line.substring(0, colonIndex), line.substring(versionIndex, line.indexOf(' ', versionIndex))));
+                String versionString = line.substring(versionIndex, line.indexOf(' ', versionIndex));
+                // version string always contains '#' symbol otherwise it's not a version string
+                s.add(new VcpkgInstallRecord(line.substring(0, colonIndex),
+                                             versionString.contains("#") ? versionString : "",
+                                             line.substring(colonIndex + 1, line.indexOf(' '))
+                        ));
             }
             return s;
         } catch (IOException e) {
@@ -96,34 +103,30 @@ public class VcpkgHelper {
         return new ArrayList<>();
     }
 
-    public static List<VcpkgPackage> getInstalledPackages() {
-        return new ArrayList<>();
-    }
-
-    public static List<VcpkgPackage> getAvailablePackages() {
-        return LazyList.create(new LazyList.IStreamObjectProvider<VcpkgPackage>() {
-
-            File[] mFiles = new File(Config.getConfig().vcpkgLocation + "/ports").listFiles();
-
-            @Override
-            public int estimateListSize() {
-                return mFiles.length;
-            }
-
-            @Override
-            public VcpkgPackage readElement(int index) {
-                return VcpkgPackage.get(mFiles[index].getName());
-            }
-
-            @Override
-            public void seekToElement(int index) {
-                // ignore
-            }
-        });
-    }
 
     public static void install(VcpkgPackage vcpkgPackage) {
+        new ProgressDialog("Installing " + vcpkgPackage.getName(), new ProgressDialog.Callback() {
+            @Override
+            public void doInBackground(ProgressDialog pd) throws Exception {
+                Process proc = new ProcessBuilder(getVcpkgExecutable(), "install", vcpkgPackage.getName())
+                        .directory(new File(Config.getConfig().vcpkgLocation))
+                        .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                        .redirectError(ProcessBuilder.Redirect.PIPE)
+                        .start();
 
+                ProcessUtil.outputToProgressDialog(pd, proc);
+            }
+
+            @Override
+            public void onSuccess() {
+                JOptionPane.showMessageDialog(VcpkgGui.getMainWindow(),
+                        "Installed package: " + vcpkgPackage.getName() + "\n" +
+                        "Version: " + vcpkgPackage.getVersion(),
+                        "Package installed successfully",
+                        JOptionPane.INFORMATION_MESSAGE);
+                VcpkgGui.invalidateListInstalledPackages();
+            }
+        });
     }
     public static void uninstall(VcpkgPackage vcpkgPackage) {
         new ProgressDialog("Uninstalling " + vcpkgPackage.getName(), new ProgressDialog.Callback() {
@@ -141,7 +144,7 @@ public class VcpkgHelper {
             @Override
             public void onSuccess() {
                 JOptionPane.showMessageDialog(VcpkgGui.getMainWindow(),
-                                "Package: " + vcpkgPackage.getName(),
+                                "Uninstalled package: " + vcpkgPackage.getName(),
                         "Package uninstalled successfully",
                         JOptionPane.INFORMATION_MESSAGE);
                 VcpkgGui.invalidateListInstalledPackages();

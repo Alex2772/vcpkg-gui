@@ -1,10 +1,9 @@
 package ru.alex2772.vcpkggui.model;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.Comparator;
 import java.util.List;
 
-public class PackageTableModel extends AbstractTableModel {
+public abstract class PackageTableModel extends AbstractTableModel {
     private final List<VcpkgPackage> mPackages;
 
     public PackageTableModel(List<VcpkgPackage> packages) {
@@ -18,7 +17,7 @@ public class PackageTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 3;
+        return 4;
     }
 
 
@@ -32,10 +31,13 @@ public class PackageTableModel extends AbstractTableModel {
         switch (columnIndex) {
             case 0: return item.getName();
             case 1: return item.getVersion();
-            case 2: return item.getPlatform();
+            case 2: return getPlatform(item);
+            case 3: return item.getDescription();
         }
         return null;
     }
+
+    protected abstract Object getPlatform(VcpkgPackage item);
 
     @Override
     public String getColumnName(int column) {

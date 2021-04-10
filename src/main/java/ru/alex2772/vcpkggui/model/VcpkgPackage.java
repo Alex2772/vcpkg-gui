@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder;
 import ru.alex2772.vcpkggui.VcpkgGui;
 import ru.alex2772.vcpkggui.core.Config;
 import ru.alex2772.vcpkggui.core.VcpkgHelper;
+import ru.alex2772.vcpkggui.util.LazyList;
 import ru.alex2772.vcpkggui.util.VcpkgConfigParser;
 
 import java.io.File;
@@ -20,9 +21,18 @@ import java.util.logging.Level;
 public class VcpkgPackage {
     private String mName;
     private String mVersion = "";
-    private String mPlatform = "";
     private String mHomepage = "";
     private String mDescription = "";
+
+    /**
+     * The platform(s) package available for
+     */
+    private String mSupportedPlatform = "";
+
+    /**
+     * The platform package built for
+     */
+    private String mBuiltPlatform = "";
     private boolean mIsInstalled = false;
 
     private static Map<String, VcpkgPackage> ourInstanceMap = new HashMap<>();
@@ -44,14 +54,7 @@ public class VcpkgPackage {
      */
     public static VcpkgPackage get(String packageFolderName) {
         if (ourInstalledPackages == null) {
-            // we should initiate and populate this list in order to determine which packages are installed
-            ourInstalledPackages = new ArrayList<>();
-            for (VcpkgHelper.VcpkgInstallRecord packageName : VcpkgHelper.getInstalledPackagesVcpkg()) {
-                VcpkgPackage p = get(packageName.name);
-                p.mIsInstalled = true;
-                p.mVersion = packageName.version;
-                ourInstalledPackages.add(p);
-            }
+            initInstalledPackagesList();
         }
         {
             VcpkgPackage p = ourInstanceMap.get(packageFolderName);
@@ -72,7 +75,7 @@ public class VcpkgPackage {
                     switch (key) {
                         case "Source" -> p.mName = value;
                         case "Version" -> p.mVersion = value;
-                        case "Supports" -> p.mPlatform = value;
+                        case "Supports" -> p.mSupportedPlatform = value;
                         case "Homepage" -> p.mHomepage = value;
                         case "Description" -> p.mDescription = value;
                     }
@@ -97,10 +100,60 @@ public class VcpkgPackage {
         return p;
     }
 
+    /**
+     * Initiates and populates list of installed packages
+     */
+    private static void initInstalledPackagesList() {
+        ourInstalledPackages = new ArrayList<>();
+        for (VcpkgHelper.VcpkgInstallRecord packageName : VcpkgHelper.getInstalledPackagesVcpkg()) {
+            VcpkgPackage p = get(packageName.name);
+            p.mIsInstalled = true;
+            p.mVersion = packageName.version;
+            p.mBuiltPlatform = packageName.platform;
+            ourInstalledPackages.add(p);
+        }
+    }
+
+    public static List<VcpkgPackage> getAvailablePackages() {
+        return LazyList.create(new LazyList.IStreamObjectProvider<VcpkgPackage>() {
+
+            File[] mFiles = new File(Config.getConfig().vcpkgLocation + "/ports").listFiles();
+
+            @Override
+            public int estimateListSize() {
+                return mFiles.length;
+            }
+
+            @Override
+            public VcpkgPackage readElement(int index) {
+                return VcpkgPackage.get(mFiles[index].getName());
+            }
+
+            @Override
+            public void seekToElement(int index) {
+                // ignore
+            }
+        });
+    }
+
+    public static List<VcpkgPackage> getInstalledPackages() {
+        if (ourInstalledPackages == null) {
+            initInstalledPackagesList();
+        }
+        return ourInstalledPackages;
+    }
+
     public static void invalidateListInstalledPackages() {
         ourInstalledPackages = null;
     }
 
+
+    /**
+     * @return true if this package is built, false if this package is not built and available in ports
+     */
+    public boolean isBuiltPackage() {
+        return !mBuiltPlatform.isEmpty();
+    }
 
     public String getName() {
         return mName;
@@ -110,8 +163,8 @@ public class VcpkgPackage {
         return mVersion;
     }
 
-    public String getPlatform() {
-        return mPlatform;
+    public String getSupportedPlatform() {
+        return mSupportedPlatform;
     }
     public String getHomepage() {
         return mHomepage;
@@ -123,5 +176,9 @@ public class VcpkgPackage {
 
     public boolean isInstalled() {
         return mIsInstalled;
+    }
+
+    public String getBuiltPlatform() {
+        return mBuiltPlatform;
     }
 }

@@ -45,9 +45,12 @@ public class ProcessUtil {
 
         while (reader.ready() || process.isAlive()) {
             String line = reader.readLine();
-            if (line != null && !line.isEmpty()) {
-                VcpkgGui.getLogger().log(Level.INFO, process + ": " + line);
-                pd.displayStateAsync(line);
+            if (line != null){
+                line = line.trim();
+                if (!line.isEmpty()) {
+                    VcpkgGui.getLogger().log(Level.INFO, process + ": " + line);
+                    pd.displayStateAsync(line);
+                }
             }
         }
         reader.close();

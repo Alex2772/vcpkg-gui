@@ -1,6 +1,5 @@
 package ru.alex2772.vcpkggui.ui;
 
-import ru.alex2772.vcpkggui.core.MyWorker;
 import ru.alex2772.vcpkggui.core.PlatformChecker;
 import ru.alex2772.vcpkggui.core.VcpkgHelper;
 import ru.alex2772.vcpkggui.model.PackageTableModel;
@@ -10,10 +9,7 @@ import ru.alex2772.vcpkggui.util.OSUtil;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableRowSorter;
-import java.awt.*;
 import java.awt.event.*;
 
 public class DescriptionPanel {
@@ -31,9 +27,8 @@ public class DescriptionPanel {
     private JPanel packageActionsPanel;
 
     public DescriptionPanel() {
-        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
         // init description label
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         description.setLocation(0, 0);
         description.setHorizontalAlignment(SwingConstants.LEFT);
         description.setVerticalAlignment(SwingConstants.TOP);
@@ -86,7 +81,7 @@ public class DescriptionPanel {
                         VcpkgHelper.uninstall(selectedPackage);
                     });
                 } else {
-                    if (PlatformChecker.check(selectedPackage.getPlatform())) {
+                    if (PlatformChecker.check(selectedPackage.getSupportedPlatform())) {
                         actionButton.setText("Install");
                         actionButton.setEnabled(true);
                         actionButton.addActionListener(e1 -> {
@@ -102,7 +97,6 @@ public class DescriptionPanel {
             }
         });
 
-
         packageActionsPanel.setVisible(false);
     }
 
@@ -113,7 +107,9 @@ public class DescriptionPanel {
     public void onTableModelChanged() {
         if (!(table.getModel() instanceof PackageTableModel))
             return;
+        table.removeColumn(table.getColumnModel().getColumn(3));
         table.setRowSorter(null);
+        table.setRowSelectionInterval(0, 0);
         searchTextField.getDocument().addDocumentListener(new DocumentListener() {
             private TableRowSorter<PackageTableModel> tableRowSorter;
 

@@ -3,6 +3,8 @@ package ru.alex2772.vcpkggui.ui;
 import ru.alex2772.vcpkggui.VcpkgGui;
 import ru.alex2772.vcpkggui.core.MyWorker;
 import ru.alex2772.vcpkggui.core.VcpkgHelper;
+import ru.alex2772.vcpkggui.model.AvailablePackageTableModel;
+import ru.alex2772.vcpkggui.model.InstalledPackageTableModel;
 import ru.alex2772.vcpkggui.model.PackageTableModel;
 import ru.alex2772.vcpkggui.model.VcpkgPackage;
 
@@ -48,7 +50,7 @@ public class MainWindow extends JFrame {
 
             @Override
             protected List<VcpkgPackage> doInBackground() throws Exception {
-                return VcpkgHelper.getInstalledPackages();
+                return VcpkgPackage.getInstalledPackages();
             }
 
             @Override
@@ -63,7 +65,7 @@ public class MainWindow extends JFrame {
                 noPackagesInstalledLabel.setVisible(installedPackages.isEmpty());
                 if (!installedPackages.isEmpty()) {
                     descriptionInstalledWrap.add(mDescriptionInstalled.root);
-                    mDescriptionInstalled.table.setModel(new PackageTableModel(installedPackages));
+                    mDescriptionInstalled.table.setModel(new InstalledPackageTableModel(installedPackages));
                     mDescriptionInstalled.onTableModelChanged();
                 }
             }
@@ -75,7 +77,7 @@ public class MainWindow extends JFrame {
 
             @Override
             protected List<VcpkgPackage> doInBackground() throws Exception {
-                return VcpkgHelper.getAvailablePackages();
+                return VcpkgPackage.getAvailablePackages();
             }
 
             @Override
@@ -86,7 +88,7 @@ public class MainWindow extends JFrame {
             @Override
             protected void myDone() throws Exception {
                 mDescriptionAvailable.root.setVisible(true);
-                mDescriptionAvailable.table.setModel(new PackageTableModel(get()));
+                mDescriptionAvailable.table.setModel(new AvailablePackageTableModel(get()));
                 mDescriptionAvailable.onTableModelChanged();
             }
         }.execute();
