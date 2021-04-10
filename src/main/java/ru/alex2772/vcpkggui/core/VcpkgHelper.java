@@ -5,6 +5,7 @@ import ru.alex2772.vcpkggui.VcpkgGui;
 import ru.alex2772.vcpkggui.model.VcpkgJson;
 import ru.alex2772.vcpkggui.model.VcpkgPackage;
 import ru.alex2772.vcpkggui.ui.ProgressDialog;
+import ru.alex2772.vcpkggui.ui.ReportDialog;
 import ru.alex2772.vcpkggui.util.LazyList;
 import ru.alex2772.vcpkggui.util.OSUtil;
 import ru.alex2772.vcpkggui.util.ProcessUtil;
@@ -31,8 +32,9 @@ public class VcpkgHelper {
                 .redirectError(ProcessBuilder.Redirect.PIPE)
                 .start();
 
+        String output = new String(proc.getInputStream().readAllBytes());
         proc.waitFor(30, TimeUnit.SECONDS);
-        return new String(proc.getInputStream().readAllBytes());
+        return output;
     }
 
     private static String getVcpkgExecutable() {
@@ -76,7 +78,12 @@ public class VcpkgHelper {
 
              */
             List<VcpkgInstallRecord> s = new ArrayList<>();
-            String[] lines = call("list").split("\n");
+            String output = call("list");
+            if (output.startsWith("No packages are")) {
+                // whoops, no packages
+                return s;
+            }
+            String[] lines = output.split("\n");
             for (String line : lines) {
                 // separate package and platform
                 int colonIndex = line.indexOf(':');
@@ -94,10 +101,8 @@ public class VcpkgHelper {
                         ));
             }
             return s;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            VcpkgGui.getLogger().log(Level.WARNING, "Could not get list of installed packages", e);
         }
 
         return new ArrayList<>();
@@ -106,6 +111,9 @@ public class VcpkgHelper {
 
     public static void install(VcpkgPackage vcpkgPackage) {
         new ProgressDialog("Installing " + vcpkgPackage.getName(), new ProgressDialog.Callback() {
+            private String output;
+            private int exitCode;
+
             @Override
             public void doInBackground(ProgressDialog pd) throws Exception {
                 Process proc = new ProcessBuilder(getVcpkgExecutable(), "install", vcpkgPackage.getName())
@@ -114,17 +122,27 @@ public class VcpkgHelper {
                         .redirectError(ProcessBuilder.Redirect.PIPE)
                         .start();
 
-                ProcessUtil.outputToProgressDialog(pd, proc);
+                output = ProcessUtil.outputToProgressDialog(pd, proc);
+                exitCode = proc.waitFor();
             }
 
             @Override
             public void onSuccess() {
-                JOptionPane.showMessageDialog(VcpkgGui.getMainWindow(),
-                        "Installed package: " + vcpkgPackage.getName() + "\n" +
-                        "Version: " + vcpkgPackage.getVersion(),
-                        "Package installed successfully",
-                        JOptionPane.INFORMATION_MESSAGE);
+                if (exitCode == 0) {
+                    ReportDialog.show(output,
+                            "Installed package: " + vcpkgPackage.getName(),
+                            "Package is installed");
+                } else {
+                    ReportDialog.show(output,
+                            "Failed to install the package: " + vcpkgPackage.getName(),
+                            "Package is not installed");
+                }
                 VcpkgGui.invalidateListInstalledPackages();
+            }
+
+            @Override
+            public void onDone() {
+                VcpkgGui.getMainWindow().setEnabled(true);
             }
         });
     }
@@ -148,6 +166,11 @@ public class VcpkgHelper {
                         "Package uninstalled successfully",
                         JOptionPane.INFORMATION_MESSAGE);
                 VcpkgGui.invalidateListInstalledPackages();
+            }
+
+            @Override
+            public void onDone() {
+                VcpkgGui.getMainWindow().setEnabled(true);
             }
         });
     }

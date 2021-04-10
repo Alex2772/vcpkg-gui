@@ -39,20 +39,23 @@ public class ProcessUtil {
      * When process outputs a line, a status label updated on ProgressDialog
      * @param pd ProgressDialog to update status label on
      * @param process process
+     * @return accumulated output
      */
-    public static void outputToProgressDialog(ProgressDialog pd, Process process) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-        while (reader.ready() || process.isAlive()) {
-            String line = reader.readLine();
-            if (line != null){
-                line = line.trim();
-                if (!line.isEmpty()) {
-                    VcpkgGui.getLogger().log(Level.INFO, process + ": " + line);
-                    pd.displayStateAsync(line);
+    public static String outputToProgressDialog(ProgressDialog pd, Process process) throws Exception {
+        String accumulator = "";
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            while (reader.ready() || process.isAlive()) {
+                String line = reader.readLine();
+                if (line != null) {
+                    accumulator += line + "\n";
+                    line = line.trim();
+                    if (!line.isEmpty()) {
+                        VcpkgGui.getLogger().log(Level.INFO, process + ": " + line);
+                        pd.displayStateAsync(line);
+                    }
                 }
             }
         }
-        reader.close();
+        return accumulator;
     }
 }

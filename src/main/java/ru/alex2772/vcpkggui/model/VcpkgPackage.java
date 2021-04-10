@@ -144,6 +144,9 @@ public class VcpkgPackage {
     }
 
     public static void invalidateListInstalledPackages() {
+        for (VcpkgPackage p : ourInstalledPackages) {
+            p.mIsInstalled = false;
+        }
         ourInstalledPackages = null;
     }
 

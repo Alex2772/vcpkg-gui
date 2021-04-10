@@ -86,6 +86,11 @@ public class VcpkgInstaller {
                                            JOptionPane.ERROR_MESSAGE);
                 }
             }
+
+            @Override
+            public void onDone() {
+
+            }
         });
     }
 
@@ -203,7 +208,7 @@ public class VcpkgInstaller {
 
 
 
-
+                default:
                 case JOptionPane.CANCEL_OPTION: // close option
                     System.exit(0);
                     return;

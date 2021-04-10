@@ -3,11 +3,13 @@ package ru.alex2772.vcpkggui.ui;
 import ru.alex2772.vcpkggui.VcpkgGui;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 
 public class ProgressDialog extends JFrame {
+    private final SwingWorker<Object, Object> mWorker;
     private JLabel stageLabel;
     private JLabel titleLabel;
     private JProgressBar progressBar;
@@ -22,8 +24,8 @@ public class ProgressDialog extends JFrame {
     public ProgressDialog(String taskName, Callback callback) {
         super(taskName);
         setContentPane(root);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
+        toFront();
         pack();
         titleLabel.setText(taskName);
         stageLabel.setText("");
@@ -36,7 +38,7 @@ public class ProgressDialog extends JFrame {
 
         setVisible(true);
 
-        SwingWorker<Object, Object> worker = new SwingWorker<>() {
+        mWorker = new SwingWorker<>() {
 
             @Override
             protected Object doInBackground() throws Exception {
@@ -46,12 +48,13 @@ public class ProgressDialog extends JFrame {
 
             @Override
             protected void done() {
+                callback.onDone();
                 try {
                     get();
                     callback.onSuccess();
                     setVisible(false);
                 } catch (CancellationException e) {
-                    dispatchEvent(new WindowEvent(ProgressDialog.this, WindowEvent.WINDOW_CLOSING));
+                    setVisible(false);
                 } catch (Exception e) {
                     VcpkgGui.getLogger().log(Level.WARNING, "Could not " + stageLabel.getText().toLowerCase(), e);
                     setVisible(false);
@@ -59,18 +62,29 @@ public class ProgressDialog extends JFrame {
                             "Error has occurred while " + stageLabel.getText().toLowerCase() + ":\n\n" +
                             e.getMessage(),
                             taskName,
-                            JOptionPane.OK_OPTION);
+                            JOptionPane.ERROR_MESSAGE);
                     System.exit(-1);
                 }
             }
         };
 
         cancelButton.addActionListener(e -> {
-            worker.cancel(true);
-            dispatchEvent(new WindowEvent(ProgressDialog.this, WindowEvent.WINDOW_CLOSING));
+            cancel();
         });
 
-        worker.execute();
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                cancel();
+            }
+        });
+
+        mWorker.execute();
+    }
+
+    private void cancel() {
+        mWorker.cancel(true);
+        setVisible(false);
     }
 
     /**
@@ -91,6 +105,7 @@ public class ProgressDialog extends JFrame {
             displayState(stageName);
         });
     }
+
 
     /**
      * Updates display info about running process. This function can be called from any thread
@@ -119,5 +134,6 @@ public class ProgressDialog extends JFrame {
     public interface Callback {
         void doInBackground(ProgressDialog pd) throws Exception;
         void onSuccess();
+        void onDone();
     }
 }

@@ -35,13 +35,11 @@ public class MainWindow extends JFrame {
 
         mDescriptionInstalled.root.setVisible(false);
         mDescriptionAvailable.root.setVisible(false);
-        noPackagesInstalledLabel.setVisible(true);
+        noPackagesInstalledLabel.setVisible(false);
 
         descriptionAvailableWrap.add(mDescriptionAvailable.root);
 
         updateVersion();
-        updateInstalledPackages();
-        updateAvailablePackages();
         setVisible(true);
     }
 
@@ -68,6 +66,7 @@ public class MainWindow extends JFrame {
                     mDescriptionInstalled.table.setModel(new InstalledPackageTableModel(installedPackages));
                     mDescriptionInstalled.onTableModelChanged();
                 }
+                updateAvailablePackages();
             }
         }.execute();
     }
@@ -110,6 +109,7 @@ public class MainWindow extends JFrame {
             @Override
             protected void myDone() throws Exception {
                 version.setText("vcpkg version " + get());
+                updateInstalledPackages();
             }
         }.execute();
     }

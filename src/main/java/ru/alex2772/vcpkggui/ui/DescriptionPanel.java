@@ -1,5 +1,6 @@
 package ru.alex2772.vcpkggui.ui;
 
+import ru.alex2772.vcpkggui.VcpkgGui;
 import ru.alex2772.vcpkggui.core.PlatformChecker;
 import ru.alex2772.vcpkggui.core.VcpkgHelper;
 import ru.alex2772.vcpkggui.model.PackageTableModel;
@@ -78,6 +79,7 @@ public class DescriptionPanel {
                     actionButton.setText("Uninstall");
                     actionButton.setEnabled(true);
                     actionButton.addActionListener(e1 -> {
+                        VcpkgGui.getMainWindow().setEnabled(false);
                         VcpkgHelper.uninstall(selectedPackage);
                     });
                 } else {
@@ -85,6 +87,7 @@ public class DescriptionPanel {
                         actionButton.setText("Install");
                         actionButton.setEnabled(true);
                         actionButton.addActionListener(e1 -> {
+                            VcpkgGui.getMainWindow().setEnabled(false);
                             VcpkgHelper.install(selectedPackage);
                         });
                     } else {

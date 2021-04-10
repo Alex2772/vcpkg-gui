@@ -43,7 +43,7 @@
           </grid>
           <grid id="1a8ea" binding="descriptionAvailableWrap" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="Available"/>
+              <tabbedpane title="All"/>
             </constraints>
             <properties/>
             <border type="none"/>
