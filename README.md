@@ -16,3 +16,9 @@
 - I'm active user of CLion
 - I want to participate in the development of CLion
 - I feel that pain of C++ programmers about using 3rd party libraries
+
+## Build instructions
+
+1. Git clone this repository
+2. Open project in IntelliJ IDEA
+3. Run the "Run" configuration
