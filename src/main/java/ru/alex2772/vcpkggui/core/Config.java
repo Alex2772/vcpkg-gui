@@ -4,16 +4,14 @@ import com.google.gson.GsonBuilder;
 import ru.alex2772.vcpkggui.VcpkgGui;
 
 import java.io.*;
-import java.util.Scanner;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Config {
     public static class ConfigImpl {
         public String vcpkgLocation = "";
     }
 
-    private static Config ourConfig = new Config();
+    private static final Config ourConfig = new Config();
     private ConfigImpl mConfigImpl;
 
     public static ConfigImpl getConfig() {

@@ -4,8 +4,6 @@ package ru.alex2772.vcpkggui.core;
 import ru.alex2772.vcpkggui.VcpkgGui;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 

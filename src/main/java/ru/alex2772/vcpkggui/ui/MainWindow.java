@@ -5,24 +5,21 @@ import ru.alex2772.vcpkggui.core.MyWorker;
 import ru.alex2772.vcpkggui.core.VcpkgHelper;
 import ru.alex2772.vcpkggui.model.AvailablePackageTableModel;
 import ru.alex2772.vcpkggui.model.InstalledPackageTableModel;
-import ru.alex2772.vcpkggui.model.PackageTableModel;
 import ru.alex2772.vcpkggui.model.VcpkgPackage;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainWindow extends JFrame {
 
     private JPanel root;
     private JLabel version;
-    private JTabbedPane tabbedPane1;
     private JPanel descriptionAvailableWrap;
     private JPanel descriptionInstalledWrap;
     private JLabel noPackagesInstalledLabel;
 
-    private DescriptionPanel mDescriptionInstalled = new DescriptionPanel();
-    private DescriptionPanel mDescriptionAvailable = new DescriptionPanel();
+    private final DescriptionPanel mDescriptionInstalled = new DescriptionPanel();
+    private final DescriptionPanel mDescriptionAvailable = new DescriptionPanel();
 
     public MainWindow() {
         super("vcpkg-gui");

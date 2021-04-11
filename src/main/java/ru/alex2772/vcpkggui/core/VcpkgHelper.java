@@ -50,7 +50,7 @@ public class VcpkgHelper {
                     return words[i + 1];
                 }
             }
-        } catch (Throwable e) {}
+        } catch (Throwable ignored) {}
 
         return "unknown";
     }

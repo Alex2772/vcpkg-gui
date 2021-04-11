@@ -35,7 +35,7 @@ public class VcpkgPackage {
     private String mBuiltPlatform = "";
     private boolean mIsInstalled = false;
 
-    private static Map<String, VcpkgPackage> ourInstanceMap = new HashMap<>();
+    private static final Map<String, VcpkgPackage> ourInstanceMap = new HashMap<>();
 
     /**
      * List of installed packages. Can be null if invalidated
@@ -117,7 +117,7 @@ public class VcpkgPackage {
     public static List<VcpkgPackage> getAvailablePackages() {
         return LazyList.create(new LazyList.IStreamObjectProvider<VcpkgPackage>() {
 
-            File[] mFiles = new File(Config.getConfig().vcpkgLocation + "/ports").listFiles();
+            final File[] mFiles = new File(Config.getConfig().vcpkgLocation + "/ports").listFiles();
 
             @Override
             public int estimateListSize() {

@@ -33,7 +33,7 @@ public class OSUtil {
         } catch (IOException | URISyntaxException ioException) {
             ioException.printStackTrace();
         } catch (UnsupportedOperationException e) {
-            if (System.getProperty("os.name").toLowerCase().indexOf("ux") >= 0) {
+            if (System.getProperty("os.name").toLowerCase().contains("ux")) {
                 // use xdg-open to open url on linux
                 try {
                     Runtime.getRuntime().exec("xdg-open " + url);

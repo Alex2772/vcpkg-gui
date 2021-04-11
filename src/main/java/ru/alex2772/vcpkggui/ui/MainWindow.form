@@ -16,7 +16,7 @@
           <text value="JetBrains Internships 2021. Author: Alex2772"/>
         </properties>
       </component>
-      <tabbedpane id="435d7" binding="tabbedPane1" default-binding="true">
+      <tabbedpane id="435d7" default-binding="true">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
             <preferred-size width="200" height="200"/>
