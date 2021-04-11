@@ -7,6 +7,7 @@ public class PlatformChecker {
      * @return true if current platform supplies for expression string or not.
      */
     public static boolean check(String expression) {
+        // stub
         return true;
     }
 }

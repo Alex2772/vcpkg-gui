@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 public class Config {
     public static class ConfigImpl {
-        public String vcpkgLocation = "vcpkg";
+        public String vcpkgLocation = "";
     }
 
     private static Config ourConfig = new Config();
